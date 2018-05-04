@@ -1,0 +1,23 @@
+[root@zabbix ~]# ausearch -c 'zabbix_server' --raw | audit2allow -M my-zabbixserver
+******************** IMPORTANT ***********************
+To make this policy package active, execute:
+
+semodule -i my-zabbixserver.pp
+
+[root@zabbix ~]# semodule -i my-zabbixserver.pp
+[root@zabbix ~]# cat my-zabbixserver.te 
+
+module my-zabbixserver 1.0;
+
+require {
+	type zabbix_var_run_t;
+	type zabbix_t;
+	class sock_file create;
+	class process setrlimit;
+}
+
+#============= zabbix_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow zabbix_t self:process setrlimit;
+allow zabbix_t zabbix_var_run_t:sock_file create;
