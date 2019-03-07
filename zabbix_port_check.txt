@@ -1,0 +1,26 @@
+scontext=system_u:system_r:zabbix_agent_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket
+
+yum install policycoreutils-python
+cat /vat/log/audit/audit.log | audit2why
+cat /var/log/audit/audit.log | audit2allow -m zabbix
+
+module zabbix 1.0;
+
+require {
+    type sudo_exec_t;
+    type zabbix_agent_t;
+    type unreserved_port_t;
+    class tcp_socket name_connect;
+    class file execute;
+}
+
+#============= zabbix_agent_t ==============
+allow zabbix_agent_t sudo_exec_t:file execute;
+
+#!!!! This avc can be allowed using the boolean 'nis_enabled'
+allow zabbix_agent_t unreserved_port_t:tcp_socket name_connect;
+
+setsebool nis_enabled on
+
+getsebool -a | grep nis
+nis_enabled --> on
